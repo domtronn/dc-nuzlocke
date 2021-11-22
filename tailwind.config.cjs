@@ -20,11 +20,13 @@ const config = {
         'full-pulse': 'full-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
       },
       dropShadow: {
-        text: '2px 2px 0 rgba(0, 0, 0, 0.9)'
+        text: '2px 2px 0 rgba(0, 0, 0, 0.9)',
       },
       scale: {
         200: '2',
-        250: '2.5'
+        250: '2.5',
+        400: '4',
+        '-400': '-4'
       }, 
       colors: {
         orange: colors.orange,

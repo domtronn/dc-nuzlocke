@@ -1,5 +1,6 @@
 <script>
   import AutoComplete from 'simple-svelte-autocomplete'
+  import { createEventDispatcher } from 'svelte'
 
   import PIcon from '$lib/components/core/PokemonIcon.svelte'
   import Icon from 'svelte-icons-pack'
@@ -9,6 +10,8 @@
   export let items = undefined, fetch = undefined
   export let placeholder, name, inset = false, color = '', label = 'label', className = '', dropdownClass = '', wide = false, rounded = false
   export let selected = null, style = ''
+
+  const dispatch = createEventDispatcher()
 
   name = name || placeholder
 
@@ -38,7 +41,7 @@
 
     inputId={name}
     bind:selectedItem={selected}
-
+    onChange={e => dispatch('change', { value: selected })}
     {items}
     {placeholder}
     {...labelProps}

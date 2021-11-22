@@ -32,11 +32,13 @@
     "ramda": "^0.27.1",
     "simple-svelte-autocomplete": "^2.2.3",
     "simplex-noise": "^3.0.0",
+    "svelte-drag": "^2.2.1",
     "svelte-icons-pack": "^1.4.6",
     "svelte-intersection-observer": "^0.9.1",
     "svelte-portal": "^2.1.2",
     "svelte-simple-modal": "^1.1.1",
     "tippy.js": "^6.3.7",
+    "workbox-cacheable-response": "^6.4.1",
     "workbox-expiration": "^6.4.1",
     "workbox-routing": "^6.4.1",
     "workbox-strategies": "^6.4.1"
