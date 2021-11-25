@@ -20,7 +20,8 @@ const config = {
         'full-pulse': 'full-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
       },
       dropShadow: {
-        text: '2px 2px 0 rgba(0, 0, 0, 0.9)'
+        text: '2px 2px 0 rgba(0, 0, 0, 0.9)',
+        grave: '1px 1px 0 rgba(0, 0, 0, 0.2)',
       },
       scale: {
         200: '2',
