@@ -1,11 +1,11 @@
 <script>
-  export let pokemon, nickname = '', scale = 1, i
+  export let pokemon, nickname = '', scale = 1
   import { capitalise } from '$lib/utils/string'
 
   const graveid = ((nickname || pokemon).length % 7) + 1
 </script>
 
-<div class='grave relative w-32 h-48 -mt-10'>
+<div class='grave relative w-32 h-48 mt-16 md:-mt-10 mx-auto transform scale-150 md:scale-100'>
   <img class='tombstone tombstone--{graveid}' src='/graves/grave{graveid}.webp' />
   <img class=pkmn src='/assets/{pokemon}.png' />
   <span>
@@ -49,6 +49,4 @@
 
   .tombstone.tombstone--7 {@apply mt-4 transform; filter: brightness(0.65);}
   .tombstone.tombstone--7 + img { @apply -mt-4; }
-
-
 </style>

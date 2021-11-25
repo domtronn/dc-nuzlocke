@@ -89,7 +89,7 @@
 }
 
 body {
-  @apply bg-transparent transition-colors dark:text-gray-200 dark:bg-gray-800 relative min-h-screen;
+  @apply bg-transparent transition-colors dark:text-gray-200 dark:bg-gray-800 relative min-h-screen overflow-x-hidden;
 }
 
 :global(.dark) body {
