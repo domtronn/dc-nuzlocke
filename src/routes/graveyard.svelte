@@ -24,13 +24,9 @@
     }))
   })
 
-  // const graveyard = Object.values(box)
-  //       .filter(i => i.pokemon)
-  //       // .filter(i => NuzlockeGroups.Dead.includes(i.status))
-
-  const graveyard = Array(35)
-        .fill()
-        .map(i => ({ pokemon: 'pikachu' }))
+  const graveyard = Object.values(box)
+         .filter(i => i.pokemon)
+         // .filter(i => NuzlockeGroups.Dead.includes(i.status))
 
   const chunkSize = Math.min(6, Math.floor(graveyard.length / 2))
   const chunked = chunk(
