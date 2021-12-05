@@ -1,32 +1,40 @@
 <script>
-  export let cid = 0
+  export let cid = 0, scale = 4
 
+  import { onMount } from 'svelte'
   import { draggable } from 'svelte-drag'
   import { fade } from 'svelte/transition'
   import { sineInOut, elasticOut, sineOut } from 'svelte/easing'
-  import { Particle } from '$lib/components/particles'
+  import Particle from '$lib/components/particles/GravEmitter.svelte'
   import { PIcon } from '$lib/components/core'
 
-  const decay = 0.974
-  const scale = 1.5 + Math.random()
-  const lTheta = (3 * (Math.PI / 2)) + 0.5
-  const rTheta = (3 * (Math.PI / 2)) - 0.5
-
-  const config = [
-    { theta: lTheta, g: 7.2, v: 18, abs: 'z-index: 30;left: 18rem; bottom: -3rem' },
-    { theta: rTheta, g: 7.2, v: 18, abs: 'z-index: 30;right: 17rem; bottom: -2.2rem' },
-    { theta: lTheta, g: 9.2, v: 24, abs: 'z-index: 20;left: 24rem; bottom: -2.5rem;' },
-    { theta: rTheta, g: 9.2, v: 24, abs: 'z-index: 20;right: 24rem; bottom: -2.4rem;' },
-    { theta: lTheta, g: 11.6, v: 30, abs: 'z-index: 10;left: 30rem; bottom: -1.2rem;' },
-    { theta: rTheta, g: 11.6, v: 31, abs: 'z-index: 10;right: 30rem; bottom: -1rem;' },
+  const calc = (i) => [
+    window.innerWidth / 2
+      * (i % 2
+         ? 1 + (Math.ceil((i + 1) / 2) / 9)
+         : 1 - (Math.ceil((i + 1) / 2) / 9)),
+    window.innerHeight / 4
+      * (1 + (Math.ceil((i + 1) / 2) / 5))
   ]
 
-  $: c = config[cid]
+  let x, y, y0, x0 = 0, tx, ty
+  onMount(() => {
+    ;[tx, ty] = calc(cid)
+    y0 = window.innerHeight / 2
+  })
 
-  let created = false
+  let created = false, createdtimeout
   export const create = _ => {
+    ;[x, y] = [tx, ty]
     created = true
-    setTimeout(_ => created = false, 1100 + Math.random() * 300)
+    clearTimeout(createdtimeout)
+    createdtimeout = setTimeout(_ => created = false, 1100)
+  }
+
+  const handledrag = _ => document.documentElement.classList.add('dragging')
+  const handledragend = e => {
+    ;[tx, ty] = [x + e.detail.offsetX, y + e.detail.offsetY]
+    document.documentElement.classList.remove('dragging')
   }
 
   const scaleanim = (node, { duration, mod = 1 }) => ({
@@ -50,44 +58,45 @@
       }
     }
   }
-
 </script>
 
-<span
-  class='absolute top-1/2'
-  class:left-0={cid % 2 == 0}
-  class:right-0={cid % 2 == 1}
->
-  {#if created}
-    <Particle {scale} {decay} theta={c.theta} g={c.g} v={c.v}>
-      <span
-        in:scaleanim={{ duration: 300 }}
-        out:scalebright={{ duration: 300, opacity: true }}
-      >
-        <PIcon type=item name=poke-ball />
-      </span>
-    </Particle>
-  {:else if !created && $$slots.default}
-    <div
-      use:draggable
-      on:svelte-drag={_ => document.documentElement.classList.add('dragging')}
-      on:svelte-drag:end={_ => document.documentElement.classList.remove('dragging')}
-      class='cursor-move hover:drop-shadow-h-black hover:dark:drop-shadow-h-white'
+{#if created}
+  <Particle
+    {scale}
+    duration={300}
+    side={cid % 2 ? 'right' : 'left'}
+    x={cid % 2 ? window.innerWidth - tx + x0 : tx - x0}
+    y={y0 - ty}
+    x0={x0}
+    y0={y0}
+    t=1250
+  >
+    <span
+      in:scaleanim={{ duration: 300 }}
+      out:scalebright={{ duration: 100, opacity: true }}
     >
-      <span
-        style={c.abs}
-        class='absolute transform container--{cid % 2 ? 'right' : 'left'} w-12'
-        in:scalebright={{ duration: 800, mod: cid % 2 ? 4 : -4, ease: elasticOut }}
-        out:scalebright={{ duration: 200, mod: cid % 2 ? 4 : -4 }}
-        >
-        <slot />
-      </span>
-    </div>
-  {/if}
-</span>
-
+      <PIcon type=item name=poke-ball />
+    </span>
+  </Particle>
+{:else if !created && $$slots.default}
+  <div
+    use:draggable
+    on:svelte-drag={handledrag}
+    on:svelte-drag:end={handledragend}
+    class='absolute cursor-move hover:drop-shadow-h-black hover:dark:drop-shadow-h-white z-30'
+    style='top: {y}px; left: {x}px; --scale: {scale}; --n-scale: {-scale};'
+  >
+    <span
+      class='fixed transform {cid % 2 ? '-mr-10' : '-ml-10'} z-30 container--{cid % 2 ? 'right' : 'left'} w-12'
+      in:scalebright={{ duration: 800, mod: cid % 2 ? scale : -scale, ease: elasticOut }}
+      out:scalebright={{ duration: 200, mod: cid % 2 ? scale : -scale }}
+    >
+      <slot />
+    </span>
+  </div>
+{/if}
 
 <style>
-  span.container--left { transform: scale(-4, 4) !important; }
-  span.container--right { transform: scale(4, 4) !important; }
+  span.container--left { transform: scale(var(--n-scale), var(--scale)) !important; }
+  span.container--right { transform: scale(var(--scale), var(--scale)) !important; }
 </style>

@@ -4,3 +4,5 @@ export const capitalise = ([first, ...rest], lowerRest = false) =>
 
 export const unslugify = (s = '') => s.replace(/-/g, ' ')
 export const slugify = (s = '') => s.toLowerCase().replace(/ +/g, '-')
+
+export const sanitise = (s) => s.replace(/galar/i, '').replace(/alola/i, '')

@@ -1,61 +1,52 @@
 <script>
   import { draggable } from 'svelte-drag'
   import { getContext } from 'svelte'
-  import { browser} from '$app/env'
-  import { fade } from 'svelte/transition'
 
-  import { AutoComplete, IconButton, PIcon, Picture } from '$lib/components/core'
   import ParticleEmitter from '$lib/components/core/ParticleEmitter.svelte'
-
-  const trainers = [
-    'blue', 'brendan', 'calem', 'dawn-pt', 'dawn', 'elio', 'ethan',
-    'gloria', 'hilbert', 'hilda', 'leaf', 'lucas-pt', 'lucas', 'lyra',
-    'may', 'nate', 'red', 'rosa', 'selene', 'serena', 'victor'
-  ]
-  let trainer = { label: trainers[0] }
-
-  import Bin from 'svelte-icons-pack/bi/BiTrash'
-
+  import TeamSelector from '$lib/components/team/TeamSelector.svelte'
   import { Particle } from '$lib/components/particles'
-  import { activeGame, getGame, read } from '$lib/store'
-  let team = Array(6).fill(null)
+
+  let heightToggle = false
+
+  let trainer
   let teamHandlers = []
+  let team = Array(6).fill(null)
 
   const { getPkmn } = getContext('game')
-
-  let box = {}
-  activeGame.subscribe(gameId => {
-    if (browser && !gameId) return
-    getGame(gameId).subscribe(read(data => box = data))
-  })
 
   // TODO: Name tags toggle
   // TODO: Toggle animation
   // TODO: Export as PNG
-  // TODO: Trainer sprites
+  // DONE: Trainer sprites
   // TODO: Wire into store
 
-  $: items = Object
-  .values(box)
-  .filter(i => i.pokemon)
-  .filter(i => !team.map(i => i?.id).includes(i?.id))
-  .map(i => ({
-    ...i,
-    label: i.nickname
-      ? `${i.nickname} the ${i.pokemon}`
-      : i.pokemon
-  }))
+  const create = () =>
+    team.forEach((t, i) => { if (t) teamHandlers[i].create() })
 
-  const create = () => {
-    team.forEach((t, i) => {
-      if (t) teamHandlers[i].create()
-    })
-  }
+  const handlechange = e => teamHandlers[e.detail.value].create()
+  const handledrag = _ => document.documentElement.classList.add('dragging')
+  const handledragend = _ => document.documentElement.classList.remove('dragging')
 
 </script>
 
-
 <main class=p-container>
+  {#each team as t, cid}
+    <ParticleEmitter
+      {cid}
+      bind:this={teamHandlers[cid]}
+    >
+      {#if team[cid]}
+        {#await getPkmn(team[cid].pokemon) then P}
+          <div style='transform: scale({heightToggle ? Math.sqrt(P.heightm) : 1})' >
+            <img
+              class='bob bob--{cid}'
+              src=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{P.imgId}.png />
+          </div>
+        {/await}
+      {/if}
+    </ParticleEmitter>
+  {/each}
+
   <div class='flex flex-1 flex-col justify-between relative'>
     <button on:click={create}>
       send out team
@@ -64,79 +55,26 @@
     {#if trainer}
       <div class=trainer
            use:draggable
-           on:svelte-drag={_ => document.documentElement.classList.add('dragging')}
-           on:svelte-drag:end={_ => document.documentElement.classList.remove('dragging')}
+           on:svelte-drag={handledrag}
+           on:svelte-drag:end={handledragend}
       >
         <img
           src=/leaders/{trainer.label}.png
           alt={trainer.label}
           class='absolute left-1/2 -translate-x-1/2'
-          width=80
-          height=80
+          width=120
+          height=120
           />
       </div>
     {/if}
 
-    {#each team as t, cid}
-      <ParticleEmitter
-        {cid}
-        bind:this={teamHandlers[cid]}
-        >
-        {#if team[cid]}
-          {#await getPkmn(team[cid].pokemon) then P}
-            <div>
-              <img
-                class='bob bob--{cid}'
-                src=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{P.imgId}.png
-                />
-            </div>
-          {/await}
-        {/if}
-      </ParticleEmitter>
-    {/each}
+  <TeamSelector
+    className='mx-auto lg:w-2/3'
+    bind:trainer={trainer}
+    bind:team={team}
+    on:change={handlechange}
+  />
 
-<div class='w-2/3 mx-auto grid grid-cols-4 grid-rows-3 gap-2'>
-  <span class=col-span-1/>
-  <span class='inline-flex gap-x-1 col-span-2'>
-    <AutoComplete
-      rounded
-      bind:selected={trainer}
-      items={trainers.map(i => ({ label: i }))}
-      className=w-full
-      placeholder=Trainer
-    />
-      <IconButton
-        rounded
-        src={Bin}
-        title=Clear
-        track=clear
-        on:click={_ => trainer = null}
-      />
-      </span>
-    <span class=col-span-1/>
-  {#each team as t, i}
-    <span class:flex-row-reverse={i%2===0} class='inline-flex gap-x-1 col-span-2'>
-    <AutoComplete
-      rounded
-      {items}
-      on:change={e => {
-      if (team[i]?.id === e.detail.value.id) return
-      team[i] = e.detail.value
-      teamHandlers[i].create()
-      }}
-      className='w-full'
-      placeholder='Team member {i + 1}'
-      />
-      <IconButton
-        rounded
-        src={Bin}
-        title=Clear
-        track=clear
-        on:click={_ => team[i] = null}
-      />
-      </span>
-    {/each}
-  </div>
   </div>
 </main>
 
