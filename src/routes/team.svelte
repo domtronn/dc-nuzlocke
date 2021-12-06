@@ -23,6 +23,9 @@
   const create = () =>
         team.forEach((t, i) => { if (t) teamHandlers[i].create() })
 
+  const hide = () =>
+        team.forEach((t, i) => { if (t) teamHandlers[i].hide() })
+
   const handlechange = e => teamHandlers[e.detail.value].create()
   const handledrag = _ => document.documentElement.classList.add('dragging')
   const handledragend = _ => document.documentElement.classList.remove('dragging')
@@ -52,6 +55,10 @@
     <button class='bg-red-500' on:click={create}>
       send out team
     </button>
+    <button class='bg-red-500' on:click={hide}>
+      hide team
+    </button>
+
     </div>
 
     {#if trainer}

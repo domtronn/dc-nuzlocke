@@ -23,13 +23,16 @@
     y0 = window.innerHeight / 2
   })
 
-  let created = false, createdtimeout
+  let created = false, show = true, createdtimeout
   export const create = _ => {
     ;[x, y] = [tx, ty]
+    show = true
     created = true
     clearTimeout(createdtimeout)
     createdtimeout = setTimeout(_ => created = false, 1100)
   }
+
+  export const hide = _ => show = false
 
   const handledrag = _ => document.documentElement.classList.add('dragging')
   const handledragend = e => {
@@ -78,7 +81,7 @@
       <PIcon type=item name=poke-ball />
     </span>
   </Particle>
-{:else if !created && $$slots.default}
+{:else if !created && show && $$slots.default}
   <div
     use:draggable
     on:svelte-drag={handledrag}
