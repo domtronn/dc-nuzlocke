@@ -6,6 +6,7 @@
 
   import { AutoComplete, IconButton } from '$lib/components/core'
   import Bin from 'svelte-icons-pack/bi/BiTrash'
+  import Swap from 'svelte-icons-pack/io/IoSwapHorizontal'
 
   /** Trainer data */
   const cleartrainer = _ => trainer = null
@@ -47,6 +48,22 @@
   export let trainer = { label: trainers[0] }
   export let team = Array(6).fill(null)
   export let className = ''
+
+  $: teamIds = team.map(i => i?.id)
+
+  const _handle = (i, j) => _ => {
+    _team[j] = team[i]
+    _team[i] = team[j]
+    let _temp = team[j]
+    team[j] = team[i]
+    team[i] = _temp
+  }
+
+  const handleUp = i => _handle(i, i - 2)
+  const handleDown = i => _handle(i, i + 2)
+  const handleRight = i => _handle(i, i + 1)
+  const handleLeft = i => _handle(i, i - 1)
+
 </script>
 
 <div class='grid grid-cols-2 lg:grid-cols-4 gap-2 {className}'>
@@ -71,20 +88,37 @@
 
   {#each team as t, i}
     <span class:lg:flex-row-reverse={i % 2 == 0}>
+      {#if (i % 2) / 2 == 0}
+        <IconButton
+          rounded
+          src={Swap}
+          title=Move
+          track=swap-row
+          on:click={handleRight(i)} />
+        {/if}
+
       <AutoComplete
         rounded
         className=w-full
-        items={teamItems}
+        items={teamItems.filter(i => !teamIds.includes(i.id))}
         placeholder='Team member {i + 1}'
         bind:selected={team[i]}
         on:change={onchange(team[i], i)} />
 
-      <IconButton
-        rounded
-        src={Bin}
-        title=Clear
-        track=clear-team
-        on:click={clearteam(i)} />
+        {#if Math.floor(i / 2) < 2}
+          <span class='translate-y-1/2' >
+            <IconButton
+              rounded
+              src={Swap}
+              track=clear-team
+              title='Move Down'
+              className='transform rotate-90'
+              on:click={handleDown(i)} />
+          </span>
+        {:else}
+          <span class=opacity-0> <IconButton src={Swap} /> </span>
+        {/if}
+
     </span>
   {/each}
 

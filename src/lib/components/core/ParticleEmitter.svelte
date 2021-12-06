@@ -19,7 +19,7 @@
 
   let x, y, y0, x0 = 0, tx, ty
   onMount(() => {
-    ;[tx, ty] = calc(cid)
+    ;[x, y] = [tx, ty] = calc(cid)
     y0 = window.innerHeight / 2
   })
 

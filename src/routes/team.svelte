@@ -6,7 +6,7 @@
   import TeamSelector from '$lib/components/team/TeamSelector.svelte'
   import { Particle } from '$lib/components/particles'
 
-  let heightToggle = false
+  let heightToggle = true
 
   let trainer
   let teamHandlers = []
@@ -21,7 +21,7 @@
   // TODO: Wire into store
 
   const create = () =>
-    team.forEach((t, i) => { if (t) teamHandlers[i].create() })
+        team.forEach((t, i) => { if (t) teamHandlers[i].create() })
 
   const handlechange = e => teamHandlers[e.detail.value].create()
   const handledrag = _ => document.documentElement.classList.add('dragging')
@@ -34,10 +34,10 @@
     <ParticleEmitter
       {cid}
       bind:this={teamHandlers[cid]}
-    >
+      >
       {#if team[cid]}
         {#await getPkmn(team[cid].pokemon) then P}
-          <div style='transform: scale({heightToggle ? Math.sqrt(P.heightm) : 1})' >
+          <div style='transform: scale({heightToggle ? Math.cbrt(P.heightm) : 1})' >
             <img
               class='bob bob--{cid}'
               src=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{P.imgId}.png />
@@ -47,10 +47,12 @@
     </ParticleEmitter>
   {/each}
 
-  <div class='flex flex-1 flex-col justify-between relative'>
-    <button on:click={create}>
+  <div id=controls class='flex flex-1 flex-col justify-between relative'>
+    <div class='inline-flex'>
+    <button class='bg-red-500' on:click={create}>
       send out team
     </button>
+    </div>
 
     {#if trainer}
       <div class=trainer
