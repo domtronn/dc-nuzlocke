@@ -11,8 +11,8 @@
   const calc = (i) => [
     window.innerWidth / 2
       * (i % 2
-         ? 1 + (Math.ceil((i + 1) / 2) / 9)
-         : 1 - (Math.ceil((i + 1) / 2) / 9)),
+         ? 1 + (Math.ceil((i + 1) / 2) / 6)
+         : 1 - (Math.ceil((i + 1) / 2) / 6)),
     window.innerHeight / 4
       * (1 + (Math.ceil((i + 1) / 2) / 5))
   ]

@@ -50,7 +50,7 @@
           >
           {#if team[cid]}
             {#await getPkmn(team[cid].pokemon) then P}
-              <div style='transform: scale({heightToggle ? Math.cbrt(P.heightm) : 1})' >
+              <div style='transform: scaleY({heightToggle ? Math.cbrt(P.heightm) : 1}) scaleX({(heightToggle ? Math.cbrt(P.heightm) : 1) * (team[cid].flipped ? -1 : 1)})' >
                 <img
                   class='bob bob--{cid}'
                   src=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{P.imgId}.png />
@@ -109,13 +109,16 @@
 
   .trainer img {
     @apply absolute top-40;
-    transform: var(--tw-transform) scale(1.6);
+    transform: var(--tw-transform) scale(0.8);
   }
-  .trainer.flipped img { transform: var(--tw-transform) scaleX(-1.6) scaleY(1.6); }
+  .trainer.flipped img { transform: var(--tw-transform) scaleX(-0.8) scaleY(0.8); }
 
-  .imagery { transform: scale(0.5) ;}
   @media (min-width:theme('screens.sm')) {
-    .imagery { transform: scale(1) ;}
+    .trainer img {
+      @apply absolute top-40;
+      transform: var(--tw-transform) scale(1.6);
+    }
+    .trainer.flipped img { transform: var(--tw-transform) scaleX(-1.6) scaleY(1.6); }
   }
 
   img.bob--1 { animation-delay: 0.3s; animation-duration: 6s; }

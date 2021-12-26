@@ -24,6 +24,7 @@
   /** Box data */
   let teamHandlers = []
   const clearteam = i => _ => team[i] = null
+  const flipteam = i => _ => team[i].flipped = !team[i]?.flipped
 
   const formatName = pkmn => pkmn.nickname
         ? `${capitalise(pkmn.nickname)} the ${sanitise(capitalise(pkmn.pokemon))}`
@@ -85,7 +86,7 @@
       rounded
       src={Flip}
       title=Flip
-      containerClassName=ml-4
+      containerClassName='mr-4 sm:ml-4'
       on:click={fliptrainer} />
 
   </span>
@@ -105,7 +106,14 @@
         <IconButton
           rounded
           src={Bin}
-          />
+          on:click={clearteam(i)}
+        />
+
+        <IconButton
+          rounded
+          src={Flip}
+          on:click={flipteam(i)}
+        />
 
     </span>
   {/each}
