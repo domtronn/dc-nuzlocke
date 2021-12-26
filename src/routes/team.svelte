@@ -1,13 +1,16 @@
 <script>
   import { draggable } from 'svelte-drag'
-  import { getContext } from 'svelte'
+  import { onMount, getContext } from 'svelte'
 
-  import { Button } from '$lib/components/core'
+  import deferStyles from '$lib/utils/defer-styles'
+  import { Button, PIcon } from '$lib/components/core'
   import ParticleEmitter from '$lib/components/core/ParticleEmitter.svelte'
   import TeamSelector from '$lib/components/team/TeamSelector.svelte'
   import { Particle } from '$lib/components/particles'
 
   let heightToggle = true
+
+  onMount(() => deferStyles('/assets/badges.css'))
 
   let trainer, flipped
   let teamHandlers = []
@@ -41,6 +44,11 @@
 <main>
 
   <div id=controls class='flex flex-1 flex-col relative'>
+
+    <div class='absolute left-1/2 -transform-x-1/2 top-1/4'>
+      <PIcon className='transform scale-200' type=badge name=voltage />
+      <Particles>
+    </div>
 
     <div class=imagery>
       {#each team as t, cid}
