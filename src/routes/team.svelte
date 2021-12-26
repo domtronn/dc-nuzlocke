@@ -2,13 +2,14 @@
   import { draggable } from 'svelte-drag'
   import { getContext } from 'svelte'
 
+  import { Button } from '$lib/components/core'
   import ParticleEmitter from '$lib/components/core/ParticleEmitter.svelte'
   import TeamSelector from '$lib/components/team/TeamSelector.svelte'
   import { Particle } from '$lib/components/particles'
 
   let heightToggle = true
 
-  let trainer
+  let trainer, flipped
   let teamHandlers = []
   let team = Array(6).fill(null)
 
@@ -26,63 +27,81 @@
   const hide = () =>
         team.forEach((t, i) => { if (t) teamHandlers[i].hide() })
 
+  const clear = () => {
+    team.forEach((t, i) => { if (t) teamHandlers[i].hide() })
+    team = []
+    teamHandlers = []
+  }
+
+
   const handlechange = e => teamHandlers[e.detail.value].create()
   const handledrag = _ => document.documentElement.classList.add('dragging')
   const handledragend = _ => document.documentElement.classList.remove('dragging')
 
 </script>
 
-<main class=p-container>
-  {#each team as t, cid}
-    <ParticleEmitter
-      {cid}
-      bind:this={teamHandlers[cid]}
-      >
-      {#if team[cid]}
-        {#await getPkmn(team[cid].pokemon) then P}
-          <div style='transform: scale({heightToggle ? Math.cbrt(P.heightm) : 1})' >
-            <img
-              class='bob bob--{cid}'
-              src=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{P.imgId}.png />
-          </div>
-        {/await}
-      {/if}
-    </ParticleEmitter>
-  {/each}
+<main>
 
-  <div id=controls class='flex flex-1 flex-col justify-between relative'>
+  <div id=controls class='flex flex-1 flex-col relative'>
     <div class='inline-flex'>
-    <button class='bg-red-500' on:click={create}>
-      send out team
-    </button>
-    <button class='bg-red-500' on:click={hide}>
-      hide team
-    </button>
 
     </div>
 
-    {#if trainer}
-      <div class=trainer
-           use:draggable
-           on:svelte-drag={handledrag}
-           on:svelte-drag:end={handledragend}
-      >
-        <img
-          src=/leaders/{trainer.label}.png
-          alt={trainer.label}
-          class='absolute left-1/2 -translate-x-1/2'
-          width=120
-          height=120
-          />
-      </div>
-    {/if}
+    <div class=imagery>
+      {#each team as t, cid}
+        <ParticleEmitter
+          {cid}
+          bind:this={teamHandlers[cid]}
+          >
+          {#if team[cid]}
+            {#await getPkmn(team[cid].pokemon) then P}
+              <div style='transform: scale({heightToggle ? Math.cbrt(P.heightm) : 1})' >
+                <img
+                  class='bob bob--{cid}'
+                  src=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{P.imgId}.png />
+              </div>
+            {/await}
+          {/if}
+        </ParticleEmitter>
+      {/each}
 
-  <TeamSelector
-    className='mx-auto lg:w-2/3'
-    bind:trainer={trainer}
-    bind:team={team}
-    on:change={handlechange}
-  />
+      {#if trainer}
+        <div class=trainer
+             class:flipped={flipped}
+             use:draggable
+             on:svelte-drag={handledrag}
+             on:svelte-drag:end={handledragend}
+             >
+          <img
+            src=/leaders/{trainer.toLowerCase()}.png
+            alt={trainer}
+            class='absolute left-1/2 -translate-x-1/2'
+            width=120
+            height=120
+            />
+        </div>
+      {/if}
+    </div>
+
+    <div
+      style='z-index:99999999'
+      class='controls border-t fixed bottom-0 border-gray-700 left-0 right-0 pb-32 px-4 pt-2 lg:pt-6'>
+      <div class='max-w-4xl mx-auto'>
+      <TeamSelector
+        className='mx-auto lg:w-2/3'
+        bind:trainer={trainer}
+        bind:flipped={flipped}
+        bind:team={team}
+        on:change={handlechange}
+        />
+
+      <div class='w-full mt-4 text-center'>
+        <Button size=xs rounded on:click={clear}>Clear</Button>
+        <Button size=xs rounded on:click={hide}>Call back</Button>
+        <Button size=xs rounded on:click={create}>Send out</Button>
+      </div>
+    </div>
+    </div>
 
   </div>
 </main>
@@ -93,8 +112,16 @@
   img { image-rendering: pixelated; }
   img.bob { animation: bob 6s ease infinite; }
 
-  .trainer img { transform: var(--tw-transform) scale(2); }
-  .trainer { z-index: 100; position: relative; }
+  .trainer img {
+    @apply absolute top-40;
+    transform: var(--tw-transform) scale(1.6);
+  }
+  .trainer.flipped img { transform: var(--tw-transform) scaleX(-1.6) scaleY(1.6); }
+
+  .imagery { transform: scale(0.5) ;}
+  @media (min-width:theme('screens.sm')) {
+    .imagery { transform: scale(1) ;}
+  }
 
   img.bob--1 { animation-delay: 0.3s; animation-duration: 6s; }
   img.bob--2 { animation-delay: 0.7s; animation-duration: 5s; }

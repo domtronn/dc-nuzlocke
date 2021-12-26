@@ -4,11 +4,15 @@
   import { activeGame, getGame, read } from '$lib/store'
   import { sanitise, capitalise } from '$lib/utils/string'
 
-  import { AutoComplete, IconButton } from '$lib/components/core'
-  import Bin from 'svelte-icons-pack/bi/BiTrash'
+  import { AutoComplete, IconButton, Tabs } from '$lib/components/core'
+  import Bin from 'svelte-icons-pack/ai/AiOutlineStop'
   import Swap from 'svelte-icons-pack/io/IoSwapHorizontal'
+  import Flip from 'svelte-icons-pack/cg/CgEditFlipH'
 
   /** Trainer data */
+  const fliptrainer =_ => flipped = !flipped
+  export let flipped = false
+
   const cleartrainer = _ => trainer = null
   const trainers = [
     'brendan', 'calem', 'dawn-pt', 'dawn', 'elio', 'ethan',
@@ -45,7 +49,8 @@
 
   let _team = Array(6).fill(null)
 
-  export let trainer = { label: trainers[0] }
+  export let trainer = trainers[0]
+  $: trainer, console.log(trainer)
   export let team = Array(6).fill(null)
   export let className = ''
 
@@ -68,34 +73,26 @@
 
 <div class='grid grid-cols-2 lg:grid-cols-4 gap-2 {className}'>
   <div class=col-span-1 />
-  <span>
-    <AutoComplete
-      rounded
-      className=w-full
-      placeholder=Trainer
-      items={trainerItems}
+  <span class='mx-auto flex items-center gap-x-6'>
+    <Tabs
+      name=trainer
+      tabs={['Lucas', 'Dawn']}
+      select={i => i}
       bind:selected={trainer}
-      item={trainerItems} />
+      />
 
     <IconButton
       rounded
-      src={Bin}
-      title=Clear
-      track=clear-trainer
-      on:click={cleartrainer} />
+      src={Flip}
+      title=Flip
+      containerClassName=ml-4
+      on:click={fliptrainer} />
+
   </span>
   <div class=col-span-1 />
 
-  {#each team as t, i}
+  {#each team.slice(0, Math.min(teamItems.length) || 6) as t, i}
     <span class:lg:flex-row-reverse={i % 2 == 0}>
-      {#if (i % 2) / 2 == 0}
-        <IconButton
-          rounded
-          src={Swap}
-          title=Move
-          track=swap-row
-          on:click={handleRight(i)} />
-        {/if}
 
       <AutoComplete
         rounded
@@ -105,19 +102,10 @@
         bind:selected={team[i]}
         on:change={onchange(team[i], i)} />
 
-        {#if Math.floor(i / 2) < 2}
-          <span class='translate-y-1/2' >
-            <IconButton
-              rounded
-              src={Swap}
-              track=clear-team
-              title='Move Down'
-              className='transform rotate-90'
-              on:click={handleDown(i)} />
-          </span>
-        {:else}
-          <span class=opacity-0> <IconButton src={Swap} /> </span>
-        {/if}
+        <IconButton
+          rounded
+          src={Bin}
+          />
 
     </span>
   {/each}

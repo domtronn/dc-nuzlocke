@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
 
-  export let className = '', rounded = false, disabled = false
+  export let className = '', rounded = false, disabled = false, size
 
   const dispatch = createEventDispatcher()
   const onclick = _ => !disabled && dispatch('click')
@@ -12,12 +12,16 @@
   on:click={onclick}
   class:disabled={disabled}
   class:rounded-lg={rounded}
-  class='border-2 ring-2 ring-transparent px-4 transition-colors h-10 {className}'
+  class='border-2 ring-2 ring-transparent px-4 transition-colors h-10 {size} {className}'
 >
   <slot />
 </button>
 
 <style>
+  button.xs { @apply text-xs px-3 h-8; }
+  button.sm { @apply text-sm px-3 h-8; }
+  button.base { @apply text-base; }
+
   :root {
     --b-fg: theme('colors.gray.700');
     --b-bg: theme('colors.gray.100');
