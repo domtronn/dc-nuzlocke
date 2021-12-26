@@ -29,10 +29,8 @@
 
   const clear = () => {
     team.forEach((t, i) => { if (t) teamHandlers[i].hide() })
-    team = []
-    teamHandlers = []
+    team = Array(6).fill(null)
   }
-
 
   const handlechange = e => teamHandlers[e.detail.value].create()
   const handledrag = _ => document.documentElement.classList.add('dragging')
@@ -43,9 +41,6 @@
 <main>
 
   <div id=controls class='flex flex-1 flex-col relative'>
-    <div class='inline-flex'>
-
-    </div>
 
     <div class=imagery>
       {#each team as t, cid}
