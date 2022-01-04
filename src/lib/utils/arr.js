@@ -8,6 +8,11 @@ export const groupBy = (field, arr, asTuple = false) => {
   return asTuple ? Object.entries(res) : res
 }
 
+export const difference = (a, b) => {
+  const s = new Set(b);
+  return a.filter(x => !s.has(x));
+}
+
 export const random = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
 export const mapObj = (o, f) => Object.entries(o).map(([k, v]) => [k, f(v)]).reduce((acc, [k, v]) => ({ ...acc, [k]: v}), {})
