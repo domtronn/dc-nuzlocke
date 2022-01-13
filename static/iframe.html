@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <script>
+     const domains = [
+       'http://localhost:3000',
+       'https://nuzlocke.vercel.app',
+       'https://nuzlocke.app',
+     ]
+
+     const messageHandler = event => {
+       console.log(`[cdls] Message received`)
+       if (!domains.includes(event.origin)) {
+         console.log(`[cdls] Invalid event origin: ${event.origin}`)
+         return
+       }
+
+       const storage = window.localStorage
+       const filtered = Object.fromEntries(
+         Object
+           .entries(storage)
+           .filter(([key]) => key.startsWith('nuzlocke'))
+       )
+
+       const { action } = event.data
+       if (action === 'cdls_get') {
+         event.source.postMessage({
+           action: 'cdls_data',
+           data: filtered
+         }, '*')
+       }
+     }
+
+     console.log(`[cdls] Iframe mounted`)
+     window.addEventListener('message', messageHandler, false)
+    </script>
+  </head>
+  <body></body>
+</html>
