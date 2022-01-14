@@ -1,16 +1,13 @@
 <html>
   <head>
     <script>
-     const domains = [
-       'http://localhost:3000',
-       'https://nuzlocke.vercel.app',
-       'https://nuzlocke.app',
-     ]
+     const log = msg => console.log(`[cdls] ${msg}`)
+     const domains = ['https://nuzlocke.vercel.app', 'https://nuzlocke.app',]
 
      const messageHandler = event => {
-       console.log(`[cdls] Message received`)
+       log(`Message received`)
        if (!domains.includes(event.origin)) {
-         console.log(`[cdls] Invalid event origin: ${event.origin}`)
+         log(`Invalid event origin: ${event.origin}`)
          return
        }
 
@@ -30,8 +27,9 @@
        }
      }
 
-     console.log(`[cdls] Iframe mounted`)
+     log(`Iframe mounted - Posting ready message`)
      window.addEventListener('message', messageHandler, false)
+     top.postMessage({ action: 'cdls_ready' }, '*')
     </script>
   </head>
   <body></body>
