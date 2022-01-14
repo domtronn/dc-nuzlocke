@@ -5,10 +5,10 @@
      const log = msg => console.log(`[cdls] ${msg}`)
 
      const messageHandler = event => {
-       log(`Message received`)
        if (event.origin !== target)
          return log(`Invalid event origin: ${event.origin}`)
 
+       const { action } = event.data
        const storage = window.localStorage
        const filtered = Object.fromEntries(
          Object
@@ -16,7 +16,8 @@
            .filter(([key]) => key.startsWith('nuzlocke'))
        )
 
-       const { action } = event.data
+       log(`Message received`, action)
+
        if (action === 'cdls_get') {
          event.source.postMessage({
            action: 'cdls_data',
