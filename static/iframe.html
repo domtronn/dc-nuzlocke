@@ -1,8 +1,9 @@
 <html>
   <head>
     <script>
-     const log = msg => console.log(`[cdls] ${msg}`)
+     const origin = 'https://nuzlocke.app'
      const domains = ['https://nuzlocke.vercel.app', 'https://nuzlocke.app',]
+     const log = msg => console.log(`[cdls] ${msg}`)
 
      const messageHandler = event => {
        log(`Message received`)
@@ -23,13 +24,13 @@
          event.source.postMessage({
            action: 'cdls_data',
            data: filtered
-         }, '*')
+         }, origin)
        }
      }
 
      log(`Iframe mounted - Posting ready message`)
      window.addEventListener('message', messageHandler, false)
-     top.postMessage({ action: 'cdls_ready' }, '*')
+     top.postMessage({ action: 'cdls_ready' }, origin)
     </script>
   </head>
   <body></body>
