@@ -16,7 +16,7 @@
            .filter(([key]) => key.startsWith('nuzlocke'))
        )
 
-       log(`Message received`, action)
+       log(`Iframe message received: ${action}`)
 
        if (action === 'cdls_get') {
          event.source.postMessage({
