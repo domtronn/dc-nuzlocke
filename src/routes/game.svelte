@@ -3,31 +3,44 @@
   import { browser } from '$app/env'
   import { fade, slide } from 'svelte/transition'
 
-  import IntersectionObserver from "svelte-intersection-observer"
+  import { Loader, Tabs } from '$lib/components/core'
 
-  import { Loader, Tooltip } from '$lib/components/core'
-  import StarterType from '$lib/components/starter-type.svelte'
-  import GymCard from '$lib/components/gym-card.svelte'
-  import PokemonSelector from '$lib/components/pokemon-selector.svelte'
+  import { SupportBanner } from '$lib/components/navs'
+  import { GameRoute, Search } from '$lib/components/Game'
+  import { Settings } from '$lib/components/Settings'
 
-  import Tabs from '$lib/components/core/Tabs.svelte'
   import SideNav from '$lib/components/navs/SideNav.svelte'
-  import Modal from 'svelte-simple-modal'
 
   import Icon from 'svelte-icons-pack'
   import Arrow from 'svelte-icons-pack/bi/BiRightArrowAlt'
+  import Hide from 'svelte-icons-pack/bi/BiHide'
 
   import Games from '$lib/data/games.json'
   import deferStyles from '$lib/utils/defer-styles'
-  import { activeGame, savedGames, getGame, patch, read, parse } from '$lib/store'
+  import debounce from '$lib/utils/debounce'
+  import { getGame, read, readdata } from '$lib/store'
 
   let gameStore, gameKey, gameData
-  let loading = true
-  let starter = 'fire'
-  let element
+  let routeEl
 
-  let filter = 0
-  const filters = ['Nuzlocke', 'Routes', 'Bosses']
+  let search = ''
+
+  $: filter, routeEl && routeEl.resetlimit()
+  let filter = 'nuzlocke'
+  const filters = [
+    { label: 'Nuzlocke', val: 'nuzlocke' },
+    { label: 'Routes', val: 'route' },
+    { label: 'Bosses', val: 'bosses' },
+    { label: 'Upcoming', val: 'upcoming' },
+  ]
+
+  let routeFilter = 'all'
+  let routeFilters = [
+    { label: 'All', val: 'all' },
+    { label: 'Upcoming', val: 'upcoming' },
+    { label: 'Planned', val: 'planned' },
+    { label: 'Missed', val: 'missed' },
+  ]
 
   let bossFilter = 'all'
   const bossFilters = [
@@ -37,8 +50,6 @@
     { label: 'Rival fights', val: 'rival' },
     { label: 'Evil team', val: 'evil-team' }
   ]
-
-  let limit = 10
 
   let route
   const fetchRoute = async (gen) => {
@@ -51,49 +62,35 @@
   onMount(async () => deferStyles('/assets/pokemon.css'))
 
   const setup = () => new Promise((resolve) => {
-    activeGame.subscribe(gameId => {
-      if (browser && !gameId) return window.location = '/'
+    const [, key, id] = readdata()
+    if (browser && !id) return window.location = '/'
 
-      gameStore = getGame(gameId)
-      gameStore.subscribe(read(game => {
-        gameData = game
-        starter = game.__starter || 'fire'
-      }))
+    gameStore = getGame(id)
+    gameKey = key
 
-      savedGames.subscribe(parse(games => {
-        gameKey = games[gameId]?.game
-        gameId =
-          loading = !browser
+    deferStyles(`/assets/items/${key}.css`)
+    fetchRoute(Games[key].pid).then(r => resolve(r))
 
-        deferStyles(`/assets/items/${gameKey}.css`)
-        fetchRoute(Games[gameKey].pid).then(r => resolve(r))
-      }))
-    })
+    gameStore.subscribe(read(game => {
+      gameData = game
+    }))
   })
 
-  const setstarter = (e) => {
-    starter = e.detail.value
-    gameStore.update(patch({ __starter: starter }))
-  }
-
-  const setnav = (e) => setloc(`boss-${e.detail.value}`, e.detail.value + 20)
-  const setroute = ({ name, id }) => () => setloc(`route-${name}`, id + 10)
-  const setloc = (id, i) => {
-    limit = Math.max(limit, i + 20)
-    setTimeout(() => document.getElementById(id).scrollIntoView({ behavior: 'smooth' }), 50)
-  }
+  const _onsearch = (e) => search = e.detail.search
+  const onsearch = debounce(_onsearch, 350)
 
   const latestnav = (routes, game) => {
+    const custom = (game?.__custom || []).reduce((acc, c) => ({ ...acc, [c.id]: true }), {})
     const locations = new Set(
       Object
-        .values(game)
-        .filter(i => i.pokemon)
-        .map(i => i.location)
+        .entries(game)
+        .filter(([id, loc]) => loc.pokemon && !!loc.status && !custom[id])
+        .map(([, i]) => i.location)
     )
 
     let i = 0
-    while (locations.size || routes[i].type !== 'route') {
-      locations.delete(routes[i].name)
+    while (i < routes.length && (locations.size || routes[i].type !== 'route')) {
+      locations.delete(routes[i]?.name)
       i++
     }
 
@@ -101,31 +98,32 @@
     return { ...r, id: i }
   }
 
+  const oncontinue = (route, gameData) => _ => {
+    show = !show
+    routeEl.setroute(latestnav(route, gameData))()
+  }
+
   let show = false
 
 </script>
 
+<SupportBanner />
+
 {#await setup()}
   <Loader />
 {:then route}
-  <div out:fade={{ duration: 250 }} in:fade={{ duration: 250, delay: 300 }} class="container mx-auto pb-8 overflow-hidden">
+  <div id='game_el' out:fade|local={{ duration: 250 }} in:fade|local={{ duration: 250, delay: 300 }} class="container mx-auto pb-24 overflow-hidden">
     <div class="flex flex-row flex-wrap pb-16 justify-center">
-      <Modal
-        closeButton={false}
-        styleWindow={{ background: 'transparent !important', width: 'fit-content' }}
-        styleContent={{ padding: '0 !important' }}
-      >
-        <main id='main' role="main" class="w-full sm:w-2/3 md:w-3/4 px-4 md:px-8 md:py-6 flex flex-col gap-y-4 relative">
+        <main id='main' role="main" class="w-full sm:w-3/4 px-4 md:px-8 md:py-6 flex flex-col gap-y-4 relative">
           <SideNav
             bind:show={show}
-            on:nav={setnav}
-            on:continue={setroute(latestnav(route, gameData))}
+            on:nav={routeEl.setnav}
             route={route}
           >
             <button
               slot='continue'
-              class='umami--click--continue text-sm underline inline-flex items-center -ml-6 transition-colors dark:hover:text-gray-200 hover:text-black'
-              on:click={setroute(latestnav(route, gameData))}
+              class='text-sm underline inline-flex items-center -ml-6 transition-colors dark:hover:text-gray-200 hover:text-black'
+              on:click={oncontinue(route, gameData)}
             >
               <Icon size='1.2rem' className='fill-current mr-1' src={Arrow} />
               Continue at {latestnav(route, gameData).name}
@@ -134,11 +132,11 @@
 
           <div class='flex flex-col gap-y-4 lg:gap-y-0 md:flex-row justify-between items-start mb-6'>
             <div class='flex flex-col gap-y-2'>
-              {#if [0, 1].includes(filter)}
+              {#if filter === 'nuzlocke'}
                 <button
                   transition:slide={{ duration: 250 }}
-                  class='umami--click--continue text-sm inline-flex items-center'
-                  on:click={setroute(latestnav(route, gameData))}
+                  class='text-sm inline-flex items-center'
+                  on:click={routeEl.setroute(latestnav(route, gameData))}
                 >
                   Continue at {latestnav(route, gameData).name}
                   <Icon className='fill-current' src={Arrow} />
@@ -147,47 +145,50 @@
 
               <Tabs name=filter tabs={filters} bind:selected={filter} />
 
-              {#if filter === 2}
+              {#if filter === 'bosses'}
                 <span transition:slide={{ duration: 250 }}>
                   <Tabs name=bosses tabs={bossFilters} bind:selected={bossFilter} />
                 </span>
               {/if}
+
+              {#if filter === 'route'}
+                <span transition:slide={{ duration: 250 }}>
+                  <Tabs name=route tabs={routeFilters} bind:selected={routeFilter} />
+                </span>
+              {/if}
+
+              {#if filter === 'upcoming'}
+                <span transition:slide={{ duration: 250 }} class='leading-5 inline-block tracking-tight dark:text-gray-400 text-sm -mb-4'>
+                  <Icon size=1.2em src={Hide} className='inline-block -mt-1 mr-1 fill-current'/><b>{latestnav(route, gameData).id}</b> items hidden
+                </span>
+              {/if}
+
             </div>
 
-            <div class='flex flex-row items-center gap-x-2'>
-              <Tooltip>Selecting a starter type modifies Rival encounters.</Tooltip>
-              <p>Starter</p>
-              <StarterType on:select={setstarter} bind:starter={starter} />
+            <div class=inline-flex>
+              <Settings />
+
+              <div class='fixed md:relative bottom-6 md:bottom-0 md:shadow-none shadow-lg' style='z-index: 4444;'>
+                <Search on:search={onsearch} />
+              </div>
             </div>
           </div>
 
-          <ul class='flex flex-col gap-y-4 lg:gap-y-2 -mt-8 sm:mt-0'>
-            {#each route.slice(0, limit) as p, i}
-              {#if p.type === 'route' && [0, 1].includes(filter)}
-                {#if gameStore}
-                  <li id='route-{p.name}' transition:fade>
-                    <PokemonSelector
-                      id={i}
-                      store={gameStore}
-                      location={p.name}
-                    />
-                  </li>
-                {/if}
-              {:else if p.type === 'gym' && [0, 2].includes(filter) && (filter === 0 || bossFilter === 'all' || bossFilter === p.group)}
-                <li class='-mb-4 md:my-2' id='boss-{i}' transition:fade>
-                  <GymCard game={gameKey} starter={starter} id={p.value} location={p.name} />
-                </li >
-              {/if}
+          <GameRoute
+            {route}
+            {search}
+            filters={{ main: filter, boss: bossFilter, route: routeFilter }}
+            bind:this={routeEl}
+            className='-mt-8 sm:mt-0'
+            game={{ data: gameData, store: gameStore, key: gameKey }}
+            progress={latestnav(route, gameData).id}
+          />
 
-              {#if i === limit -5}
-                <IntersectionObserver {element} on:intersect={() => limit+=5}>
-                  <li bind:this={element} />
-                </IntersectionObserver>
-              {/if}
-            {/each}
-          </ul>
         </main>
-      </Modal>
     </div>
   </div>
 {/await}
+
+<style>
+  .container { min-height: 90vh; }
+</style>

@@ -1,5 +1,6 @@
 <script>
-  export let title, src = false, name = false, disabled = false, containerClassName = '', className = '', color = 'gray', track = 'icon-button', rounded = false
+  export let title, src = false, name = false, disabled = false, containerClassName = '', className = '', color = 'gray', rounded = false
+  export let borderless = false
 
   import { createEventDispatcher } from 'svelte'
   import Icon from 'svelte-icons-pack'
@@ -14,9 +15,11 @@
   aria-label={title}
   title={title}
   on:click|stopPropagation={onclick}
+  class:borderless={borderless === true}
+  class:sm:borderless={borderless === 'sm'}
   class:disabled={disabled}
   class:rounded-lg={rounded}
-  class='group umami--click--{track} {color} {containerClassName} '
+  class='group {color} {containerClassName} '
 >
   {#if $$slots.icon}
     <slot name=icon />
@@ -86,6 +89,24 @@
     background-color: var(--input-bg);
     border-color: theme('colors.gray.200');
     color: theme('colors.gray.400');
+  }
+
+  button.borderless,
+  button.disabled.borderless {
+    @apply border-0 bg-transparent shadow-none;
+  }
+
+  button.sm\:borderless,
+  button.disabled.sm\:borderless {
+    @apply border-0 outline-none bg-transparent shadow-none;
+  }
+
+  @media (min-width: theme('screens.sm')) {
+    button.sm\:borderless,
+    button.disabled.sm\:borderless {
+      @apply border-2 shadow-sm;
+      background-color: var(--input-bg);
+    }
   }
 
   button.disabled {

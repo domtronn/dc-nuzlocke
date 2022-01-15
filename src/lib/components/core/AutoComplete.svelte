@@ -19,6 +19,8 @@
     ...(typeof label === 'function' ? { labelFunction: label }: {})
   }
 
+  export let search
+
   $: style = inset ? `--auc-inset: ${typeof inset === 'string' ? inset : '3.2rem'}` : ''
 </script>
 
@@ -37,12 +39,14 @@
     hideArrow
 
     inputId={name}
+    bind:text={search}
     bind:selectedItem={selected}
 
     {items}
     {placeholder}
     {...labelProps}
 
+    html5autocomplete={false}
     delay={fetch ? 75 : 0}
     searchFunction={fetch}
 
@@ -139,21 +143,6 @@
     width: calc(100vw - theme('spacing.8')) !important;
   }
 
-  @media (min-width: theme('screens.sm')) {
-    :global(input.autocomplete-input),
-    :global(input.autocomplete)
-    {
-      font-size: theme('fontSize.xs') !important;
-      height: theme('spacing.10') !important;
-    }
-
-    :global(div.autocomplete-list),
-    :global(.wide div.autocomplete-list)
-    {
-      width: auto !important;
-    }
-  }
-
   :global(.dark input.autocomplete-input) {
     border-color: theme('colors.gray.600');
   }
@@ -166,7 +155,7 @@
 
   /* Autocomplete list */
   :global(div.autocomplete-list) {
-    padding: 0 !important;
+    padding: theme('spacing.2') 0 !important;
     margin-top: theme('spacing.2');
     border-width: theme('borderWidth.2') !important;
     border-color: theme('colors.gray.200') !important;
@@ -178,6 +167,7 @@
   }
 
   :global(div.autocomplete-list-item) {
+    padding: 0 !important;
     color: var(--auc-fg) !important;
   }
 
@@ -187,12 +177,57 @@
     color: var(--auc-focus-fg) !important;
   }
 
-  :global(div.autocomplete-list-item:hover),
-  :global(div.autocomplete-list-item.selected)
-  {
+  :global(div.autocomplete-list-item.confirmed),
+  :global(div.autocomplete-list-item.selected.confirmed) {
+    background-color: var(--auc-focus) !important;
     color: var(--auc-focus-fg) !important;
-    background-color: var(--auc-focus-2) !important;
   }
+
+  @media (hover: hover) {
+    :global(div.autocomplete-list-item:hover),
+    :global(div.autocomplete-list-item.selected)
+    {
+      color: var(--auc-focus-fg) !important;
+      background-color: var(--auc-focus-2) !important;
+    }
+  }
+
+  @media (hover: none) {
+    :global(div.autocomplete-list-item:hover),
+    :global(div.autocomplete-list-item.selected)
+    {
+      color: var(--auc-fg) !important;
+      background-color: var(--auc-bg) !important;
+    }
+  }
+
+  @media (min-width: theme('screens.sm')) {
+    :global(input.autocomplete-input),
+    :global(input.autocomplete)
+    {
+      font-size: theme('fontSize.xs') !important;
+      height: theme('spacing.10') !important;
+    }
+
+    :global(div.autocomplete-list),
+    :global(.wide div.autocomplete-list)
+    {
+      padding: 0 !important;
+      width: auto !important;
+    }
+
+    :global(div.autocomplete-list-item.selected .dupe),
+    :global(div.autocomplete-list-item.confirmed .dupe) {
+      opacity: 100% !important;
+      filter: none;
+    }
+
+    :global(div.autocomplete-list-item.selected .dupe__span),
+    :global(div.autocomplete-list-item.confirmed .dupe__span) {
+      display: none;
+    }
+  }
+
 
   label {
     border: 0;
